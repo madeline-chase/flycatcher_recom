@@ -1,0 +1,29 @@
+alphabet = Codon(letter=DNA)
+genetic_code=Standard
+
+DATA=$(DATA)
+SUFF=$(SUFF)
+IN=$(IN_PRE)
+OUT=$(OUT_PRE)
+
+### Alignment
+input.data1=alignment(format=Fasta, file=$(IN)/$(DATA).spec_subset.fasta, remove_stop_codons=yes, sites_to_use = complete,max_unresolved_allowed = 6)
+
+### Used tree
+input.tree1=user(file=$(TREE), format = Newick)
+
+### Model file
+param = $(OUT)/$(DATA).$(SUFF).params
+
+
+### mapping type
+#map.type = DnDs
+map.type = Combination(reg1=DnDs, reg2=SW)
+
+output.counts = PerBranchPerType(prefix=$(OUT)/$(DATA).$(SUFF).counts_, splitNorm=true)
+
+### normalization
+nullProcessParams =  CodonDist.beta*=1
+
+
+

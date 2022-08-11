@@ -1,0 +1,74 @@
+alphabet=Codon(letter=DNA)
+genetic_code=Standard
+
+DAT=$(DATA)
+SUFF=$(SUFF)
+IN=$(IN_PRE)
+OUT=$(OUT_PRE)
+
+input.data1=alignment(file = $(IN)/$(DATA).spec_subset.fasta, format = Fasta, sites_to_use = complete, remove_stop_codons=yes,max_unresolved_allowed = 6)
+
+# ----------------------------------------------------------------------------------------
+#                                     Input tree file
+# ----------------------------------------------------------------------------------------
+
+input.tree1=user(file = $(TREE), format = Newick)
+init.brlen.method = Equal(value=0.04)
+
+likelihood.recursion = simple
+likelihood.recursion_simple.compression = simple
+
+# ----------------------------------------------------------------------------------------
+#                                     Model specification
+# ----------------------------------------------------------------------------------------
+
+# Substitution model parameters:
+#L95X3 : all paramerters are shared between branches, theta is site specific, all the other parameters are shared between sites.
+
+nonhomogeneous=general
+nonhomogeneous.number_of_models=1
+model1=CodonDist(model1=L95(),model2=L95(kappa=CodonDist.1_L95.kappa_1, gamma=CodonDist.1_L95.gamma_1, alpha=CodonDist.1_L95.alpha_1, beta=CodonDist.1_L95.beta_1),model3=L95(kappa=CodonDist.1_L95.kappa_1, gamma=CodonDist.1_L95.gamma_1, alpha=CodonDist.1_L95.alpha_1, beta=CodonDist.1_L95.beta_1))
+rate_distribution1 = Constant
+nonhomogeneous.root_freq=Codon(frequency1=GC,frequency2=GC,frequency3=GC)
+
+process1 = NonHomogeneous(model1=1, tree=1, rate=1, model1.nodes_id = 0:2)
+
+phylo1 = Single(process=1, data=1)
+
+# ----------------------------------------------------------------------------------------
+#                                     Optimization
+# ----------------------------------------------------------------------------------------
+
+optimization.verbose = 1
+
+optimization.max_number_f_eval = 1000
+optimization.tolerance = 0.001
+optimization.message_handler = none
+optimization.profiler = $(OUT)/$(DAT).$(SUFF).prof
+optimization.topology = no
+optimization.method=fullD //[DB|fullD]
+optimization.method_DB.nstep=1
+optimization.scale_first=no
+optimization.verbose=3
+
+optimization.backup.file=$(OUT)/$(DAT).$(SUFF).bup
+
+#output.tree_ids.file = $(OUT)/$(DAT).$(SUFF).ids
+
+# Should we write the resulting tree? none or file name.
+output.tree.file = $(OUT)/$(DAT).$(SUFF)_ml.dnd
+
+# model ouput file:
+
+output.estimates=$(OUT)/$(DAT).$(SUFF).params
+
+# ----------------------------------------------------------------------------------------
+#                                     Bootstrap
+# ----------------------------------------------------------------------------------------
+
+bootstrap.number = 0
+# Tell if numerical parameters should be kept to their initial value when bootstrapping: 
+bootstrap.approximate = no
+# Set this to yes for detailed output when bootstrapping. 
+bootstrap.verbose = no
+
